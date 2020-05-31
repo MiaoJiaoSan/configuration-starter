@@ -18,15 +18,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 @Configuration
 @EnableConfigurationProperties(ConfigRedisProperties.class)
 @ConditionalOnProperty(prefix = ConfigRedisProperties.REDIS_CONFIG, value = "enable", matchIfMissing = true)
-@ConditionalOnClass(RedisTemplate.class)
-@AutoConfigureAfter(RedisTemplate.class)
 public class ConfigRedisAutoConfigure {
-
-
-
-
-
-
 
   @Bean
   public RefreshScopeRegistry refreshScopeRegistry(){
@@ -36,9 +28,10 @@ public class ConfigRedisAutoConfigure {
   @Bean
   public RedisConfigClient redisConfigClient(
       ConfigRedisProperties properties,
+      RefreshScopeRegistry refreshScopeRegistry,
       @Qualifier("redisTemplate") RedisTemplate template
   ){
-    return new RedisConfigClient(properties, template);
+    return new RedisConfigClient(properties, refreshScopeRegistry, template);
   }
 
 }

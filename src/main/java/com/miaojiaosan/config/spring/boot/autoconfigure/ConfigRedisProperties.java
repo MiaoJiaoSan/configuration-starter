@@ -12,9 +12,17 @@ public class ConfigRedisProperties {
 
   public static final String REDIS_CONFIG = "config.redis";
 
+  public Boolean enable = false;
+
   public String group;
 
-  public String dataId;
+  public Boolean getEnable() {
+    return enable;
+  }
+
+  public void setEnable(Boolean enable) {
+    this.enable = enable;
+  }
 
   public String getGroup() {
     return group;
@@ -22,13 +30,5 @@ public class ConfigRedisProperties {
 
   public void setGroup(String group) {
     this.group = group;
-  }
-
-  public String getDataId() {
-    return dataId;
-  }
-
-  public void setDataId(String dataId) {
-    this.dataId = dataId;
   }
 }
