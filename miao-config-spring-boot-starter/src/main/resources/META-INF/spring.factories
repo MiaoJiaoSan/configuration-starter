@@ -1,0 +1,2 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+com.miaojiaosan.config.spring.boot.autoconfigure.ConfigRedisAutoConfigure

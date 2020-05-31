@@ -1,0 +1,10 @@
+spring:
+  redis:
+    host: localhost
+    port: 9376
+    password: redis
+
+config:
+  redis:
+    group: test
+    data-id: 10086
