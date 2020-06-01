@@ -10,13 +10,15 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.env.MutablePropertySources;
 import org.springframework.core.env.PropertySource;
-import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 
 import javax.annotation.PostConstruct;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Redis Config Client
@@ -35,6 +37,8 @@ public class RedisConfigClient implements ApplicationContextAware {
   private BeanDefinitionRegistry registry;
 
   private ConfigurableApplicationContext context;
+
+  private static final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
   /**
    * miao properties map
    */
@@ -62,6 +66,11 @@ public class RedisConfigClient implements ApplicationContextAware {
     preparePullProperties(group);
 
     pullProperties(group);
+    //启用定时任务
+    executor.scheduleAtFixedRate(()->{
+      Map properties = template.opsForHash().entries(group);
+      miaoProperties.putAll(properties);
+    },5,5, TimeUnit.SECONDS);
 
   }
   private void preparePullProperties(String group) {
@@ -95,7 +104,6 @@ public class RedisConfigClient implements ApplicationContextAware {
     ConcurrentHashMap miaoProperties = (ConcurrentHashMap) propertySource.getSource();
     Map properties = template.opsForHash().entries(group);
     miaoProperties.putAll(properties);
-    RedisConnectionFactory connectionFactory = template.getConnectionFactory();
   }
 
   @Override

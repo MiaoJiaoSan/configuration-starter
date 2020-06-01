@@ -26,6 +26,7 @@ public class ConfigRedisAutoConfigure {
   }
 
   @Bean
+  @SuppressWarnings({ "rawtypes"})
   public RedisConfigClient redisConfigClient(
       ConfigRedisProperties properties,
       RefreshScopeRegistry refreshScopeRegistry,
