@@ -63,17 +63,23 @@ public class RedisConfigClient implements ApplicationContextAware {
       return;
     }
     //拉取属性前置工作
-    preparePullProperties(group);
+    preparePullProperties();
 
     pullProperties(group);
     //启用定时任务
+    schedule(group);
+
+  }
+
+  @SuppressWarnings({ "rawtypes", "unchecked"})
+  private void schedule(String group) {
     executor.scheduleAtFixedRate(()->{
       Map properties = template.opsForHash().entries(group);
       miaoProperties.putAll(properties);
     },5,5, TimeUnit.SECONDS);
-
   }
-  private void preparePullProperties(String group) {
+
+  private void preparePullProperties() {
     //检查environment中是否存在miaoMap
     if(checkExistsSpringProperty()){
       createMiaoProperty();
