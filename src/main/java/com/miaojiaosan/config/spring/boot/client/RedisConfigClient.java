@@ -62,21 +62,20 @@ public class RedisConfigClient implements ApplicationContextAware {
     // group not exist
     String group = properties.getGroup();
     Boolean exists = jedis.exists(group);
+    jedis.close();
     //如果分组不存在直接返回
     if(Objects.isNull(exists)||!exists){
       return;
     }
     //拉取属性前置工作
     preparePullProperties();
-    //拉取配置
-    pullProperties(group);
     //启用定时任务
     schedule(group);
 
   }
 
   private void schedule(String group) {
-    EXECUTOR.scheduleAtFixedRate(()-> pullProperties(group),0,5, TimeUnit.SECONDS);
+    EXECUTOR.scheduleAtFixedRate(()-> pullProperties(group),0,1, TimeUnit.SECONDS);
   }
 
   private void preparePullProperties() {
@@ -110,6 +109,7 @@ public class RedisConfigClient implements ApplicationContextAware {
     @SuppressWarnings({ "rawtypes", "unchecked"})
     ConcurrentHashMap<String, Object> miaoProperties = (ConcurrentHashMap) propertySource.getSource();
     Map<String, String> properties = jedis.hgetAll(group);
+    jedis.close();
     miaoProperties.putAll(properties);
     refreshBean();
   }
@@ -126,7 +126,7 @@ public class RedisConfigClient implements ApplicationContextAware {
       if(RefreshScope.NAME.equals(beanDefinition.getScope())) {
         //先删除,,,,思考，如果这时候删除了bean，有没有问题？
         context.getBeanFactory().destroyScopedBean(beanDefinitionName);
-        //在实例化
+        //再实例化
         context.getBean(beanDefinitionName);
       }
     }
