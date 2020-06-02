@@ -1,6 +1,7 @@
 package com.miaojiaosan.config.redis;
 
-import com.miaojiaosan.config.spring.boot.app.Application;
+import com.miaojiaosan.config.redis.app.Application;
+import com.miaojiaosan.config.redis.app.SpringBean;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,9 +16,16 @@ public class ConfigRedisTest {
   @Autowired
   private ApplicationContext context;
 
+
+
   @Test
-  public void test(){
-    assert null != context.getBean("redisTemplate");
+  public void test() throws InterruptedException {
+    long time = System.currentTimeMillis();
+    while (true) {
+      context.getBean(SpringBean.class);
+      if(System.currentTimeMillis() - time > 120000)
+      Thread.sleep(10000);
+    }
   }
 
 }

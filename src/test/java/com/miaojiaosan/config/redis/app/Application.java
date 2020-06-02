@@ -1,4 +1,4 @@
-package com.miaojiaosan.config.spring.boot.app;
+package com.miaojiaosan.config.redis.app;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

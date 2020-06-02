@@ -1,8 +1,10 @@
 package com.miaojiaosan.config.spring.boot.client;
 
 import com.miaojiaosan.config.spring.boot.autoconfigure.ConfigRedisProperties;
+import com.miaojiaosan.config.spring.boot.scope.RefreshScope;
 import com.miaojiaosan.config.spring.boot.scope.RefreshScopeRegistry;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.boot.env.OriginTrackedMapPropertySource;
 import org.springframework.context.ApplicationContext;
@@ -10,14 +12,14 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.env.MutablePropertySources;
 import org.springframework.core.env.PropertySource;
-import org.springframework.data.redis.core.RedisTemplate;
+import redis.clients.jedis.Jedis;
 
 import javax.annotation.PostConstruct;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -28,9 +30,9 @@ public class RedisConfigClient implements ApplicationContextAware {
 
   public static final String MIAO_SOURCE = "miaoSource";
   /**
-   * {@link RedisTemplate}
+   * {@link Jedis}
    */
-  private final RedisTemplate template;
+  private final Jedis jedis;
 
   private final ConfigRedisProperties properties;
 
@@ -38,19 +40,19 @@ public class RedisConfigClient implements ApplicationContextAware {
 
   private ConfigurableApplicationContext context;
 
-  private static final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+  private static final ScheduledExecutorService EXECUTOR = new ScheduledThreadPoolExecutor(1);
   /**
    * miao properties map
    */
-  private ConcurrentHashMap miaoProperties = new ConcurrentHashMap();
+  private ConcurrentHashMap<String,String> miaoProperties = new ConcurrentHashMap<>();
 
   public RedisConfigClient(
       ConfigRedisProperties properties,
       RefreshScopeRegistry refreshScopeRegistry,
-      RedisTemplate template){
+      Jedis jedis){
     this.registry = refreshScopeRegistry.getBeanDefinitionRegistry();
     this.properties = properties;
-    this.template = template;
+    this.jedis = jedis;
   }
 
   @PostConstruct
@@ -59,29 +61,27 @@ public class RedisConfigClient implements ApplicationContextAware {
     if(!properties.getEnable()){return;}
     // group not exist
     String group = properties.getGroup();
-    if(Objects.isNull(group)||!template.hasKey(group)){
+    Boolean exists = jedis.exists(group);
+    //如果分组不存在直接返回
+    if(Objects.isNull(exists)||!exists){
       return;
     }
     //拉取属性前置工作
     preparePullProperties();
-
+    //拉取配置
     pullProperties(group);
     //启用定时任务
     schedule(group);
 
   }
 
-  @SuppressWarnings({ "rawtypes", "unchecked"})
   private void schedule(String group) {
-    executor.scheduleAtFixedRate(()->{
-      Map properties = template.opsForHash().entries(group);
-      miaoProperties.putAll(properties);
-    },5,5, TimeUnit.SECONDS);
+    EXECUTOR.scheduleAtFixedRate(()-> pullProperties(group),0,5, TimeUnit.SECONDS);
   }
 
   private void preparePullProperties() {
     //检查environment中是否存在miaoMap
-    if(checkExistsSpringProperty()){
+    if(!checkExistsSpringProperty()){
       createMiaoProperty();
     }
   }
@@ -102,18 +102,33 @@ public class RedisConfigClient implements ApplicationContextAware {
     propertySources.addLast(zookeeperSource);
   }
 
-  @SuppressWarnings({ "rawtypes", "unchecked"})
+
   private void pullProperties(String group) {
     MutablePropertySources propertySources = context.getEnvironment().getPropertySources();
     PropertySource<?> propertySource = propertySources.get(MIAO_SOURCE);
-    //这里英国不可能为空,因为前面创建了miaoProperties放进了environment中
-    ConcurrentHashMap miaoProperties = (ConcurrentHashMap) propertySource.getSource();
-    Map properties = template.opsForHash().entries(group);
+    if(Objects.isNull(propertySource)){ return;}
+    @SuppressWarnings({ "rawtypes", "unchecked"})
+    ConcurrentHashMap<String, Object> miaoProperties = (ConcurrentHashMap) propertySource.getSource();
+    Map<String, String> properties = jedis.hgetAll(group);
     miaoProperties.putAll(properties);
+    refreshBean();
   }
 
   @Override
   public void setApplicationContext(ApplicationContext context) throws BeansException {
     this.context = (ConfigurableApplicationContext) context;
+  }
+
+  private void refreshBean() {
+    String[] beanDefinitionNames = context.getBeanDefinitionNames();
+    for (String beanDefinitionName : beanDefinitionNames) {
+      BeanDefinition beanDefinition = registry.getBeanDefinition(beanDefinitionName);
+      if(RefreshScope.NAME.equals(beanDefinition.getScope())) {
+        //先删除,,,,思考，如果这时候删除了bean，有没有问题？
+        context.getBeanFactory().destroyScopedBean(beanDefinitionName);
+        //在实例化
+        context.getBean(beanDefinitionName);
+      }
+    }
   }
 }

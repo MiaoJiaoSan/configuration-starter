@@ -11,6 +11,8 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class RefreshScope implements Scope {
 
+  public static final String NAME = "refresh";
+
 
   private ConcurrentHashMap<String,Object> container = new ConcurrentHashMap<>();
 

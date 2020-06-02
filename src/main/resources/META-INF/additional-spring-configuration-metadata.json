@@ -1,0 +1,38 @@
+{
+  "properties": [
+    {
+      "sourceType": "com.miaojiaosan.config.spring.boot.autoconfigure.ConfigRedisProperties",
+      "defaultValue": "localhost",
+      "name": "config.redis.host",
+      "type": "java.lang.String",
+      "description": "Description for config.redis.host."
+    },
+    {
+      "sourceType": "com.miaojiaosan.config.spring.boot.autoconfigure.ConfigRedisProperties",
+      "defaultValue": 6379,
+      "name": "config.redis.port",
+      "type": "java.lang.Integer",
+      "description": "Description for config.redis.port."
+    },
+    {
+      "sourceType": "com.miaojiaosan.config.spring.boot.autoconfigure.ConfigRedisProperties",
+      "defaultValue": "",
+      "name": "config.redis.password",
+      "type": "java.lang.String",
+      "description": "Description for config.redis.password."
+    },
+    {
+      "sourceType": "com.miaojiaosan.config.spring.boot.autoconfigure.ConfigRedisProperties",
+      "name": "config.redis.group",
+      "type": "java.lang.String",
+      "description": "Description for config.redis.group."
+    },
+    {
+      "sourceType": "com.miaojiaosan.config.spring.boot.autoconfigure.ConfigRedisProperties",
+      "defaultValue": false,
+      "name": "config.redis.enable",
+      "type": "java.lang.Boolean",
+      "description": "Description for config.redis.enable."
+    }
+  ]
+}
