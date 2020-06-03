@@ -69,13 +69,15 @@ public class RedisConfigClient implements ApplicationContextAware {
     }
     //拉取属性前置工作
     preparePullProperties();
+    //拉取properties
+    pullProperties(group);
     //启用定时任务
     schedule(group);
 
   }
 
   private void schedule(String group) {
-    EXECUTOR.scheduleAtFixedRate(()-> pullProperties(group),0,1, TimeUnit.SECONDS);
+    EXECUTOR.scheduleAtFixedRate(()-> pullProperties(group),5,1, TimeUnit.SECONDS);
   }
 
   private void preparePullProperties() {
