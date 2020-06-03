@@ -77,7 +77,7 @@ public class RedisConfigClient implements ApplicationContextAware {
   }
 
   private void schedule(String group) {
-    EXECUTOR.scheduleAtFixedRate(()-> pullProperties(group),5,1, TimeUnit.SECONDS);
+    EXECUTOR.scheduleAtFixedRate(()-> pullProperties(group),1,1, TimeUnit.SECONDS);
   }
 
   private void preparePullProperties() {
@@ -126,10 +126,18 @@ public class RedisConfigClient implements ApplicationContextAware {
     for (String beanDefinitionName : beanDefinitionNames) {
       BeanDefinition beanDefinition = registry.getBeanDefinition(beanDefinitionName);
       if(RefreshScope.NAME.equals(beanDefinition.getScope())) {
-        //先删除,,,,思考，如果这时候删除了bean，有没有问题？
-        context.getBeanFactory().destroyScopedBean(beanDefinitionName);
-        //再实例化
-        context.getBean(beanDefinitionName);
+        RefreshScope.WRITE_LOCK.tryLock();
+        try {
+          //先删除,,,,思考，如果这时候删除了bean，有没有问题？
+          context.getBeanFactory().destroyScopedBean(beanDefinitionName);
+          //再实例化
+          context.getBean(beanDefinitionName);
+        }catch(Exception ex){
+          //ignore
+        }finally {
+          RefreshScope.WRITE_LOCK.unlock();
+        }
+
       }
     }
   }
