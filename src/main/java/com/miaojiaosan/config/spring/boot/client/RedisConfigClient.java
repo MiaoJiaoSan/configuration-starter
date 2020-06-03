@@ -109,11 +109,21 @@ public class RedisConfigClient implements ApplicationContextAware {
     PropertySource<?> propertySource = propertySources.get(MIAO_SOURCE);
     if(Objects.isNull(propertySource)){ return;}
     @SuppressWarnings({ "rawtypes", "unchecked"})
-    ConcurrentHashMap<String, Object> miaoProperties = (ConcurrentHashMap) propertySource.getSource();
+    ConcurrentHashMap<String, String> miaoProperties = (ConcurrentHashMap) propertySource.getSource();
     Map<String, String> properties = jedis.hgetAll(group);
     jedis.close();
-    miaoProperties.putAll(properties);
-    refreshBean();
+    boolean refresh = false;
+    for(Map.Entry<String, String> entry: properties.entrySet()){
+      String k = entry.getKey(),v = entry.getValue();
+      if(!Objects.equals(miaoProperties.putIfAbsent(k,v),v)
+      ){
+        miaoProperties.put(k, v);
+        refresh = true;
+      }
+    }
+    if(refresh) {
+      refreshBean();
+    }
   }
 
   @Override
