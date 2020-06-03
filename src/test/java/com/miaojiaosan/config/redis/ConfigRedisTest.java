@@ -23,8 +23,8 @@ public class ConfigRedisTest {
 
 
   public static void main(String[] args) {
-    Jedis jedis = new Jedis("172.26.108.111",6379);
-    jedis.auth("shangyue#@20181010");
+    Jedis jedis = new Jedis("localhost",9736);
+    jedis.auth("redis");
     jedis.del("test");
     jedis.hset("test",new HashMap<String, String>(){{
       put("spring.application.name","source_web");
