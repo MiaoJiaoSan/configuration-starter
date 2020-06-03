@@ -23,7 +23,7 @@ public class RefreshScope implements Scope {
 
   @Override
   public Object get(String name, ObjectFactory<?> objectFactory) {
-    READ_LOCK.tryLock();
+    READ_LOCK.lock();
     try {
       //如果容器中包含BeanName 直接获取
       if (container.containsKey(name)) {
