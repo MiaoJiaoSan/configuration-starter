@@ -99,8 +99,8 @@ public class RedisConfigClient implements ApplicationContextAware {
 
   private void createMiaoProperty() {
     MutablePropertySources propertySources = context.getEnvironment().getPropertySources();
-    OriginTrackedMapPropertySource zookeeperSource = new OriginTrackedMapPropertySource(MIAO_SOURCE, miaoProperties);
-    propertySources.addLast(zookeeperSource);
+    OriginTrackedMapPropertySource redisSource = new OriginTrackedMapPropertySource(MIAO_SOURCE, miaoProperties);
+    propertySources.addLast(redisSource);
   }
 
 
