@@ -36,10 +36,9 @@ public class ConfigRedisTest {
     long time = System.currentTimeMillis();
     while (true) {
       context.getBean(SpringBean.class);
-      if(System.currentTimeMillis() - time > 60000){
+      if(System.currentTimeMillis() - time > 30000){
         break;
       }
-      Thread.sleep(10000);
     }
   }
 }

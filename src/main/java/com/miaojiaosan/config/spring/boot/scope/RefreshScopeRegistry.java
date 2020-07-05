@@ -4,6 +4,7 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor;
+import org.springframework.lang.NonNull;
 
 /**
  * 注册{@link RefreshScope}
@@ -15,14 +16,14 @@ public class RefreshScopeRegistry implements BeanDefinitionRegistryPostProcessor
   private BeanDefinitionRegistry registry;
 
   @Override
-  public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) throws BeansException {
+  public void postProcessBeanDefinitionRegistry(@NonNull BeanDefinitionRegistry registry) throws BeansException {
     this.registry = registry;
   }
 
   @Override
   public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
     //注册RefreshScope 为SpringScope
-    beanFactory.registerScope("refresh",new RefreshScope());
+    beanFactory.registerScope(RefreshScope.NAME,new RefreshScope());
   }
 
   public BeanDefinitionRegistry getBeanDefinitionRegistry(){

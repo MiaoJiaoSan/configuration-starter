@@ -12,6 +12,7 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.env.MutablePropertySources;
 import org.springframework.core.env.PropertySource;
+import org.springframework.lang.NonNull;
 import redis.clients.jedis.Jedis;
 
 import javax.annotation.PostConstruct;
@@ -100,7 +101,7 @@ public class RedisConfigClient implements ApplicationContextAware {
   private void createMiaoProperty() {
     MutablePropertySources propertySources = context.getEnvironment().getPropertySources();
     OriginTrackedMapPropertySource redisSource = new OriginTrackedMapPropertySource(MIAO_SOURCE, miaoProperties);
-    propertySources.addLast(redisSource);
+    propertySources.addFirst(redisSource);
   }
 
 
@@ -127,7 +128,7 @@ public class RedisConfigClient implements ApplicationContextAware {
   }
 
   @Override
-  public void setApplicationContext(ApplicationContext context) throws BeansException {
+  public void setApplicationContext(@NonNull ApplicationContext context) throws BeansException {
     this.context = (ConfigurableApplicationContext) context;
   }
 
